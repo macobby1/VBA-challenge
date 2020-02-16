@@ -1,0 +1,190 @@
+Sub Tickersymbol()
+
+'Set an initial variable for holding the worksheet
+Dim xsheet As Worksheet
+On Error Resume Next
+Dim Ticker As String
+Dim Total_Volume As Double
+Dim Yearly_Change As Double
+Dim Percent_Change As Double
+Dim Summary_Table_Row As Integer
+Dim DateMinOpen As Double
+Dim DateMaxClose As Double
+
+'Loop through all worksheets
+For Each xsheet In ThisWorkbook.Worksheets
+
+'Select the sheet
+ xsheet.Select
+
+'Set Headings
+
+    Cells(1, 9).Value = "Ticker"
+    Cells(1, 10).Value = "Yearly Change"
+    Cells(1, 11).Value = "Percent Change"
+    Cells(1, 12).Value = "Total Stock Volume"
+    Cells(2, 14).Value = "Greatest % Increase"
+    Cells(3, 14).Value = "Greatest % Decrease"
+    Cells(4, 14).Value = "Greatest Total Volume"
+    Cells(1, 15).Value = "Ticker"
+    Cells(1, 16).Value = "Value"
+
+'Set an initial variable to hold Total Volume
+ 
+ Total_Volume = 0
+
+'Set integers for loop
+ Summary_Table_Row = 2
+
+'Determine last row
+ LastRow = Cells(Rows.Count, 1).End(xlUp).Row
+
+'Loop through all ticker symbols
+ For i = 2 To LastRow
+
+    'Check if we are still within the same ticker symbol
+     If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+    
+        'Find Ticker symbol
+         Ticker = Cells(i, 1).Value
+          
+         'Add to the volume total
+         Total_Volume = Total_Volume + Cells(i, 7).Value
+     
+        'Print the Ticker Symbol in the Summary Table
+         Range("I" & Summary_Table_Row).Value = Ticker
+      
+        'Print the Total_Volume to the summary table
+         Range("L" & Summary_Table_Row).Value = Total_Volume
+     
+        'Add one to the summary table row
+         Summary_Table_Row = Summary_Table_Row + 1
+      
+         'Reset Total_Volume
+          Total_Volume = 0
+     
+     'If cells immediately following a row with the same Ticker
+      Else
+    
+        'Add to the Ticker_Volume_Total
+         Total_Volume = Total_Volume + Cells(i, 7).Value
+    
+    
+    End If
+    
+    Next i
+    
+    'Set initial variables
+    x = 2
+    i = 2
+
+    DateMinOpen = Cells(i, 3).Value
+
+    'Determine last row
+
+    LastRow = Cells(Rows.Count, 1).End(xlUp).Row
+
+    'Loop through the rows
+    For i = 2 To LastRow
+
+    If Cells(i, 1).Value = Cells(x, 9).Value Then
+
+        Total_Volume = Total_Volume + Cells(i, 7).Value
+
+        DateMaxClose = Cells(i, 6)
+
+    Else
+    
+        'Find yearly change
+         Cells(x, 10).Value = DateMaxClose - DateMinOpen
+
+    If DateMaxClose <= 0 Then
+
+         Cells(x, 11).Value = 0
+
+
+    Else
+    
+    'Find percentage change
+    Cells(x, 11).Value = (DateMaxClose / DateMinOpen) - 1
+
+
+    End If
+    
+    'Set color
+     Cells(x, 11).Style = "Percent"
+                        
+     If Cells(x, 10).Value >= 0 Then
+                                
+        Cells(x, 10).Interior.ColorIndex = 4
+        Else
+        Cells(x, 10).Interior.ColorIndex = 3
+                    
+     End If
+                
+        Cells(x, 12).Value = Total_Volume
+
+        DateMinOpen = Cells(i, 3).Value
+
+        Total_Volume = Cells(i, 7).Value
+
+        x = x + 1
+        Cells(x, 9).Value = Cells(i, 1).Value
+
+    End If
+
+    Next i
+    
+  
+    'Call next module
+    Call Module1.Greatest_Values
+
+  
+ 
+    'Move to next worksheet
+     Next xsheet
+
+End Sub
+
+Sub Greatest_Values()
+
+ 'Determine last row
+ LastRow = Cells(Rows.Count, 11).End(xlUp).Row
+         
+  Range("K2").Select
+    
+  'Loop through cells
+  For c = 1 To LastRow - 1
+
+ 'Store New Max
+    If ActiveCell(c, 1) > Max Then
+       Max = ActiveCell(c, 1)
+       Ticker1 = ActiveCell(c, -1)
+    End If
+    
+ ' Store New Min
+    If ActiveCell(c, 1) < Min Then
+        Min = ActiveCell(c, 1)
+        Ticker2 = ActiveCell(c, -1)
+    End If
+      
+    If ActiveCell(c, 2) > MaxVolume Then
+        MaxVolume = ActiveCell(c, 2)
+        Ticker3 = ActiveCell(c, -1)
+    End If
+     
+     Ticker = Cells(2, 15).Value
+     
+    
+    Next c
+    
+    'Store values
+    Cells(2, 15) = Ticker1
+    Cells(3, 15) = Ticker2
+    Cells(4, 15) = Ticker3
+    Cells(2, 16) = FormatPercent(Max)
+    Cells(3, 16) = FormatPercent(Min)
+    Cells(4, 16) = MaxVolume
+
+
+End Sub
